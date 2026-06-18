@@ -36,9 +36,21 @@ formatted_query = (
     f"Research topic: {query}\n"
     "Respond in JSON format with fields: topic, summary, sources, tools_used, keywords."
 )
-print("Thinking...", end="", flush=True)
 for step in agent.stream({"messages": [{"role": "user", "content": formatted_query}]}):
-    print(".", end="", flush=True)
+    if "model" in step:
+        msgs = step["model"]["messages"]
+        last = msgs[-1]
+        if last.tool_calls:
+            for tc in last.tool_calls:
+                name = tc["name"]
+                if name == "duckduckgo_search":
+                    print("  Searching the web...", flush=True)
+                elif name == "search_wikipedia":
+                    print("  Looking up Wikipedia...", flush=True)
+                elif name == "save_to_txt":
+                    print("  Saving to file...", flush=True)
+        else:
+            print("  Generating response...", flush=True)
 
 
 print()
@@ -50,7 +62,10 @@ if content and content.startswith("```"):
     content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
 try:
     parsed = json.loads(content)
-    print(ResearchResponse(**parsed))
+    result = ResearchResponse(**parsed)
+    print(result)
+    save_to_txt.invoke(json.dumps(parsed, indent=2))
+    print("  ✅ Saved to research_output.txt")
 except (json.JSONDecodeError, TypeError) as e:
     print(f"Failed to parse response as JSON: {e}")
     print("Raw response:", content[:500])
