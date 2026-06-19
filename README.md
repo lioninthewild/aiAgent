@@ -20,7 +20,7 @@ An AI-powered research assistant that searches the web and Wikipedia, compiles s
 
 ```bash
 # 1. Clone the repo
-git clone <repository-url>
+git clone git@github.com:lioninthewild/aiAgent.git
 cd aiAgent
 
 # 2. Create and activate virtual environment
